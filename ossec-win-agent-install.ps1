@@ -1,4 +1,4 @@
-﻿# Copyright 2022 KHIKA Technologies Private Limited. All rights reserved.
+# Copyright 2022 KHIKA Technologies Private Limited. All rights reserved.
 # This script is written for automation of ossec-agent installation for Windows
 # Official ossec site link for downloading source code and other documentation related information is available through the link https://www.ossec.net/download-ossec/
 
@@ -6,7 +6,7 @@ param (
     [Parameter(Mandatory=$true)][string]$server_ip,$device_key
  )
 
-$Logfile = "$PSScriptRoot\ossec-installation.log"
+$Logfile = "$PSScriptRoot\ossec-win-agent-installation.log"
 function WriteLog{
     Param ([string]$LogString)
     $Stamp = (Get-Date).toString("yyyy/MM/dd HH:mm:ss")
@@ -17,10 +17,12 @@ function WriteLog{
 
 $elevated = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 if ($elevated -ne 'True'){
-     Write-output "You are not Administrator User. You need to Run PowerShell Script in as 'Windows PowerShell ISE with Administrator' to install the ossec-agent"
+    Write-Output "You are not Administrator User. You need to Run PowerShell Script in as 'Windows PowerShell ISE with Administrator' to install the ossec-agent"
     break;
     }else{
-    
+		WriteLog "Starting automated installation"
+		Write-Output "Starting automated installation"
+		Write-Output "Note: Do not press any key - this is automated installation"
         WriteLog "ossec-agent-win32-3.7.0-24343.exe downloading started"
         $url = "https://updates.atomicorp.com/channels/atomic/windows/ossec-agent-win32-3.7.0-24343.exe"
         $outpath = "$PSScriptRoot/ossec-agent-win32-3.7.0-24343.exe"
@@ -34,7 +36,10 @@ if ($elevated -ne 'True'){
         WriteLog "ossec-agent installation started"
         Start-Process -Wait -FilePath "$PSScriptRoot/ossec-agent-win32-3.7.0-24343.exe" -ArgumentList "/S" -PassThru
         WriteLog "ossec-agent installation completed"
-
+		
+		$installation_path = 'C:\Program Files (x86)\ossec-agent'
+		if (Test-Path -Path $installation_path ){	
+		WriteLog "ossec-agent installation path exists- $installation_path"
         (Get-Content -path $internalConfig -Raw) -replace 'logcollector.remote_commands=0','logcollector.remote_commands=1' | Set-Content -Path $internalConfig
         (Get-Content -path $internalConfig -Raw) -replace 'remoted.verify_msg_id=1','remoted.verify_msg_id=0' | Set-Content -Path $internalConfig
         New-Item -Path 'C:\Program Files (x86)\ossec-agent\rids\sender'
@@ -49,7 +54,7 @@ if ($elevated -ne 'True'){
 
         Start-Sleep -s 10
         WriteLog "Device Added"
-
+		Write-Output "(Note: Please ignore any warning saying 'manage_agents: Input too large. Not adding it.')"
         WriteLog "Starting service."
         Write-Output "Starting service."
         Start-Service $srvName
@@ -67,5 +72,11 @@ if ($elevated -ne 'True'){
         WriteLog "$($srvName) is now $($srvStat.status)"
 
         Start-Sleep -s 10
-        WriteLog "Service started. Now Check logs into UI"
+        WriteLog "Completed automated installation"
+		Write-Output "Completed automated installation"
+		}else
+		{
+			Write-Output "Ossec-agent installation path doesn't exist. Please re-install the ossec-agent"
+			WriteLog "Ossec-agent installation path doesn't exist. Please re-install the ossec-agent"
+		}
 }
