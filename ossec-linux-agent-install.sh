@@ -5,7 +5,7 @@
 main()
 {
 os_name=`grep "PRETTY_NAME" /etc/os-release |  cut -f2 -d"="`
-exec >ossec_installation.log
+log_file=$(pwd)/ossec-linux-agent-installation.log
 export NON_INT=1
 export INPUTTEXT="yes"
 user=`whoami`
@@ -14,11 +14,13 @@ if [ "$user" != "root" ]; then
    echo "You must be root user"
    exit
 fi
-
+exec >$log_file
 if [[ "$os_name" == *"CentOS Linux"* ]] || [[ "$os_name" == *"Ubuntu"* ]]; then
         echo "OS Name="$os_name
 	echo "############################################################################"
         if [[ "$os_name" == *"CentOS Linux"* ]]; then
+		logger -s "Starting automated installation"
+                logger -s "Note: Do not press any key - this is automated installation"
 		echo "wget installation started"
                 sudo yum install wget -y
 		echo "wget installation completed"
@@ -37,6 +39,8 @@ if [[ "$os_name" == *"CentOS Linux"* ]] || [[ "$os_name" == *"Ubuntu"* ]]; then
 		yes | sudo /var/ossec/bin/manage_agent -i "$device_key"
 		echo "Device Added with key:" $device_key
         elif [[ "$os_name" == *"Ubuntu"* ]]; then
+		logger -s "Starting automated installation"
+		logger -s "Note: Do not press any key - this is automated installation"
 		echo "wget installation started"
                 sudo apt-get install wget -y
                 echo "wget installation completed"
@@ -63,8 +67,10 @@ if [[ "$os_name" == *"CentOS Linux"* ]] || [[ "$os_name" == *"Ubuntu"* ]]; then
                 sed -i 's/remoted.verify_msg_id=1/remoted.verify_msg_id=0/g' /var/ossec/etc/internal_options.conf
                 sudo /var/ossec/bin/ossec-control start
                 sudo /var/ossec/bin/ossec-control restart
+		logger -s "(Note: Please ignore any Error saying 'ERROR: Duplicated directory given /bin or /etc')"
+		logger -s "Completed automated installation"
 else
-        echo "OS Name="$os_name
+        echo "OS Name=$os_name"
         echo "If OS Name is other than CENTOS/UBUNTU Please follow the manual installation step guide to download and install from https://www.ossec.net/download-ossec/"
         echo "For HELP please contact us on https://khika.com/"
         exit
