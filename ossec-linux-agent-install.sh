@@ -22,7 +22,7 @@ if [[ "$os_name" == *"CentOS Linux"* ]] || [[ "$os_name" == *"Ubuntu"* ]]; then
 		logger -s "***************************************************************"
 		logger -s "** Starting automated installation"
         logger -s "** Note: Do not press any key - this is automated installation"
-		logger -s "** Note: Installation process may take 2-3 minutes to complete"
+		logger -s "** Note: Installation process may take 3-5 minutes to complete"
 		logger -s "****************************************************************"$'\r\n\n'
 		echo "Starting automated installation"
 		echo "wget installation started"
@@ -47,7 +47,7 @@ if [[ "$os_name" == *"CentOS Linux"* ]] || [[ "$os_name" == *"Ubuntu"* ]]; then
 		logger -s "***************************************************************"
 		logger -s "** Starting automated installation"
 		logger -s "** Note: Do not press any key - this is automated installation"
-		logger -s "** Note: Installation process may take 2-3 minutes to complete"
+		logger -s "** Note: Installation process may take 3-5 minutes to complete"
         logger -s "****************************************************************"$'\r\n\n'
 		echo "Starting automated installation"
 		echo "wget installation started"
@@ -75,6 +75,19 @@ if [[ "$os_name" == *"CentOS Linux"* ]] || [[ "$os_name" == *"Ubuntu"* ]]; then
                 sed -i 's/logcollector.remote_commands=0/logcollector.remote_commands=1/g' /var/ossec/etc/internal_options.conf
                 sed -i 's/remoted.verify_msg_id=1/remoted.verify_msg_id=0/g' /var/ossec/etc/internal_options.conf
                 sudo /var/ossec/bin/ossec-control start
+				echo "Waiting for 60s....for service to fully start"
+				sleep 10
+				echo -n "50s to go...."
+				sleep 10
+				echo -n "40s to go...."
+				sleep 10
+				echo -n "30s to go...."
+				sleep 10
+				echo -n "20s to go...."
+				sleep 10
+				echo -n "10s to go...."
+				sleep 10
+				echo "Completed 60s wait"
                 sudo /var/ossec/bin/ossec-control restart
 		echo "(Note: Please ignore any message saying 'Duplicated directory given /bin or /etc')"
 		echo "Completed automated installation"
