@@ -19,8 +19,12 @@ if [[ "$os_name" == *"CentOS Linux"* ]] || [[ "$os_name" == *"Ubuntu"* ]]; then
         echo "OS Name="$os_name
 	echo "############################################################################"
         if [[ "$os_name" == *"CentOS Linux"* ]]; then
-		logger -s "Starting automated installation"
-                logger -s "Note: Do not press any key - this is automated installation"
+		logger -s "***************************************************************"
+		logger -s "** Starting automated installation"
+        logger -s "** Note: Do not press any key - this is automated installation"
+		logger -s "** Note: Installation process may take 2-3 minutes to complete"
+		logger -s "****************************************************************"$'\r\n\n'
+		echo "Starting automated installation"
 		echo "wget installation started"
                 sudo yum install wget -y
 		echo "wget installation completed"
@@ -38,28 +42,33 @@ if [[ "$os_name" == *"CentOS Linux"* ]] || [[ "$os_name" == *"Ubuntu"* ]]; then
                 touch /var/ossec/queue/rids/sender
 		yes | sudo /var/ossec/bin/manage_agent -i "$device_key"
 		echo "Device Added with key:" $device_key
+
         elif [[ "$os_name" == *"Ubuntu"* ]]; then
-		logger -s "Starting automated installation"
-		logger -s "Note: Do not press any key - this is automated installation"
+		logger -s "***************************************************************"
+		logger -s "** Starting automated installation"
+		logger -s "** Note: Do not press any key - this is automated installation"
+		logger -s "** Note: Installation process may take 2-3 minutes to complete"
+        logger -s "****************************************************************"$'\r\n\n'
+		echo "Starting automated installation"
 		echo "wget installation started"
-                sudo apt-get install wget -y
-                echo "wget installation completed"
+        sudo apt-get install wget -y
+        echo "wget installation completed"
 		echo "############################################################################"
 		echo "ossec-agent packages download started"
 		wget -q -O - https://updates.atomicorp.com/installers/atomic | sudo -E bash
-                echo "ossec-agent packages download completed"
+        echo "ossec-agent packages download completed"
 		echo "############################################################################"
 		echo "Ubuntu update started"
 		sudo apt-get update
 		echo "Ubuntu update completed"
 		echo "############################################################################"
-                echo "ossec-agent installation started"
+        echo "ossec-agent installation started"
 		sudo apt-get install ossec-hids-agent -y
 		echo "ossec-agent installation complted"
 		echo "############################################################################"
-                sed -E -i "s/[0-9]{1,3}(\.[0-9]{1,3}){3}/$server_ip/g" /var/ossec/etc/ossec.conf
+        sed -E -i "s/[0-9]{1,3}(\.[0-9]{1,3}){3}/$server_ip/g" /var/ossec/etc/ossec.conf
 		echo "server IP updated:" $server_ip
-                touch /var/ossec/queue/rids/sender
+        touch /var/ossec/queue/rids/sender
 		yes | sudo /var/ossec/bin/manage_agents -i "$device_key"
 		echo "Device Added with key:" $device_key
         fi
@@ -67,12 +76,19 @@ if [[ "$os_name" == *"CentOS Linux"* ]] || [[ "$os_name" == *"Ubuntu"* ]]; then
                 sed -i 's/remoted.verify_msg_id=1/remoted.verify_msg_id=0/g' /var/ossec/etc/internal_options.conf
                 sudo /var/ossec/bin/ossec-control start
                 sudo /var/ossec/bin/ossec-control restart
-		logger -s "(Note: Please ignore any Error saying 'ERROR: Duplicated directory given /bin or /etc')"
-		logger -s "Completed automated installation"
+		echo "(Note: Please ignore any message saying 'Duplicated directory given /bin or /etc')"
+		echo "Completed automated installation"
+		logger -s "(Note: Please ignore any message saying 'Duplicated directory given /bin or /etc')"
+		logger -s "Completed automated installation"$'\r\n\n\n'
+		
+		logger -s "******************************************************************************************"
+		logger -s "** You can execute reports after 5-10 minutes (required for logs to be collected at Khika)"
+		logger -s "******************************************************************************************"
+		
 else
         echo "OS Name=$os_name"
-        echo "If OS Name is other than CENTOS/UBUNTU Please follow the manual installation step guide to download and install from https://www.ossec.net/download-ossec/"
-        echo "For HELP please contact us on https://khika.com/"
+        echo "If OS Name is other than CentOS/Ubuntu Please follow the manual installation step guide to download and install from https://www.ossec.net/download-ossec/"
+        echo "For assitance, please contact us on support@khika.com"
         exit
 fi
 }
