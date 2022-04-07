@@ -75,19 +75,19 @@ if [[ "$os_name" == *"CentOS Linux"* ]] || [[ "$os_name" == *"Ubuntu"* ]]; then
                 sed -i 's/logcollector.remote_commands=0/logcollector.remote_commands=1/g' /var/ossec/etc/internal_options.conf
                 sed -i 's/remoted.verify_msg_id=1/remoted.verify_msg_id=0/g' /var/ossec/etc/internal_options.conf
                 sudo /var/ossec/bin/ossec-control start
-				echo "Waiting for 60s....for service to fully start"
+				logger -s "\nWaiting for 60s....for service to fully start\n"
 				sleep 10
-				echo -n "50s to go...."
+				logger -s "50s to go...."
 				sleep 10
-				echo -n "40s to go...."
+				logger -s "40s to go...."
 				sleep 10
-				echo -n "30s to go...."
+				logger -s "30s to go...."
 				sleep 10
-				echo -n "20s to go...."
+				logger -s "20s to go...."
 				sleep 10
-				echo -n "10s to go...."
+				logger -s "10s to go...."
 				sleep 10
-				echo "Completed 60s wait"
+				logger -s "\nCompleted 60s wait\n\n"
                 sudo /var/ossec/bin/ossec-control restart
 		echo "(Note: Please ignore any message saying 'Duplicated directory given /bin or /etc')"
 		echo "Completed automated installation"
