@@ -20,9 +20,13 @@ if ($elevated -ne 'True'){
     Write-Output "You are not Administrator User. You need to Run PowerShell Script in as 'Windows PowerShell ISE with Administrator' to install the ossec-agent"
     break;
     }else{
+        Write-Output "*************************************************************************************"
 		WriteLog "Starting automated installation"
-		Write-Output "Starting automated installation"
-		Write-Output "Note: Do not press any key - this is automated installation"
+		Write-Output "** Starting automated installation"
+		Write-Output "** Note: Do not press any key - this is automated installation"
+        Write-Output "** Note: Installation process may take 2-3 minutes to complete"
+        Write-Output "** Note: Please ignore any message: 'manage_agents: Input too large. Not adding it.'"
+        Write-Output "*************************************************************************************"
         WriteLog "ossec-agent-win32-3.7.0-24343.exe downloading started"
         $url = "https://updates.atomicorp.com/channels/atomic/windows/ossec-agent-win32-3.7.0-24343.exe"
         $outpath = "$PSScriptRoot/ossec-agent-win32-3.7.0-24343.exe"
@@ -39,7 +43,7 @@ if ($elevated -ne 'True'){
 		
 		$installation_path = 'C:\Program Files (x86)\ossec-agent'
 		if (Test-Path -Path $installation_path ){	
-		WriteLog "ossec-agent installation path exists- $installation_path"
+		WriteLog "ossec-agent installation path exist- $installation_path"
         (Get-Content -path $internalConfig -Raw) -replace 'logcollector.remote_commands=0','logcollector.remote_commands=1' | Set-Content -Path $internalConfig
         (Get-Content -path $internalConfig -Raw) -replace 'remoted.verify_msg_id=1','remoted.verify_msg_id=0' | Set-Content -Path $internalConfig
         New-Item -Path 'C:\Program Files (x86)\ossec-agent\rids\sender'
@@ -54,9 +58,8 @@ if ($elevated -ne 'True'){
 
         Start-Sleep -s 10
         WriteLog "Device Added"
-		Write-Output "(Note: Please ignore any warning saying 'manage_agents: Input too large. Not adding it.')"
-        WriteLog "Starting service."
-        Write-Output "Starting service."
+		WriteLog "Starting service."
+        Write-Output "`r`nStarting service."
         Start-Service $srvName
         $srvStat = Get-Service $srvName
         Write-Output "$($srvName) is now $($srvStat.status)"
@@ -73,7 +76,11 @@ if ($elevated -ne 'True'){
 
         Start-Sleep -s 10
         WriteLog "Completed automated installation"
-		Write-Output "Completed automated installation"
+		Write-Output "Completed automated installation`r`n"
+        
+        Write-Output "******************************************************************************************"
+		Write-Output "** You can execute reports after 5-10 minutes (required for complete logs to be collected at Khika)"
+		Write-Output "******************************************************************************************"
 		}else
 		{
 			Write-Output "Ossec-agent installation path doesn't exist. Please re-install the ossec-agent"
