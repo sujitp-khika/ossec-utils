@@ -24,7 +24,7 @@ if ($elevated -ne 'True'){
 		WriteLog "Starting automated installation"
 		Write-Output "** Starting automated installation"
 		Write-Output "** Note: Do not press any key - this is automated installation"
-        Write-Output "** Note: Installation process may take 2-3 minutes to complete"
+        Write-Output "** Note: Installation process may take 3-5 minutes to complete"
         Write-Output "** Note: Please ignore any message: 'manage_agents: Input too large. Not adding it.'"
         Write-Output "*************************************************************************************"
         WriteLog "ossec-agent-win32-3.7.0-24343.exe downloading started"
@@ -43,7 +43,7 @@ if ($elevated -ne 'True'){
 		
 		$installation_path = 'C:\Program Files (x86)\ossec-agent'
 		if (Test-Path -Path $installation_path ){	
-		WriteLog "ossec-agent installation path exist- $installation_path"
+		WriteLog "ossec-agent installation path exists - $installation_path"
         (Get-Content -path $internalConfig -Raw) -replace 'logcollector.remote_commands=0','logcollector.remote_commands=1' | Set-Content -Path $internalConfig
         (Get-Content -path $internalConfig -Raw) -replace 'remoted.verify_msg_id=1','remoted.verify_msg_id=0' | Set-Content -Path $internalConfig
         New-Item -Path 'C:\Program Files (x86)\ossec-agent\rids\sender'
@@ -58,17 +58,35 @@ if ($elevated -ne 'True'){
 
         Start-Sleep -s 10
         WriteLog "Device Added"
-		WriteLog "Starting service."
+	WriteLog "Starting service."
         Write-Output "`r`nStarting service."
         Start-Service $srvName
         $srvStat = Get-Service $srvName
         Write-Output "$($srvName) is now $($srvStat.status)"
         WriteLog "$($srvName) is now $($srvStat.status)"
+		
+		WriteLog "Waiting for 60s....for service to fully start"
+        Write-Output "`r`nWaiting for 60s....for service to fully start"
 
-        Start-Sleep -s 15
+        Start-Sleep -s 10
+		WriteLog "50s to go...."
+        Write-Output "`r`n50s to go...."
+		Start-Sleep -s 10
+		WriteLog "40s to go...."
+        Write-Output "`r`n40s to go...."
+		Start-Sleep -s 10
+		WriteLog "30s to go...."
+        Write-Output "`r`n30s to go...."
+		Start-Sleep -s 10
+		WriteLog "20s to go...."
+        Write-Output "`r`n20s to go...."
+		Start-Sleep -s 10
+		WriteLog "10s to go...."
+        Write-Output "`r`n10s to go...."
+		Start-Sleep -s 10
 
         WriteLog "Restarting service."
-        Write-Output "Restarting service."
+        Write-Output "`r`nRestarting service."
         Restart-Service $srvName
         $srvStat = Get-Service $srvName
         Write-Output "$($srvName) is now $($srvStat.status)"
