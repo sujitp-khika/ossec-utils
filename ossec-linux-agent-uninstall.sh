@@ -55,7 +55,7 @@ if [[ "$os_name" == *"CentOS Linux"* ]] || [[ "$os_name" == *"Ubuntu"* ]]; then
             logger -s "ossec-agent uninstallation started"        
             echo "ossec-agent uninstallation started"
             sudo apt-get remove ossec-hids-agent --purge -y
-            slwwp 30
+            sleep 30
             sudo rm -f /etc/ossec-init.conf
 		    logger -s "Removing ossec directory"
 		    echo "##################################################################"
