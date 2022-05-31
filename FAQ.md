@@ -32,4 +32,4 @@ A: The offering has 1 month free trial (starting from day of Activating the subs
 
 > How do I cancel my subscription?
 
-A: You can cancel at any time by going to the Azure account (in case of marketplace purchase) SaaS subscriptions page or (in case of purchase from AppSource) Admin center to cancel an active subscription. We will be obliged if you can let us know any particular reason of cancellation prior to cancelling it - so that we can find ways to solve those problems and serve you better. Your feedback is very important for us. 
+A: You can cancel at any time by going to the Azure account (in case of marketplace purchase) SaaS subscriptions page or (in case of purchase from AppSource) Admin center to cancel an active subscription as described [here](https://docs.microsoft.com/en-us/microsoft-365/commerce/manage-saas-apps?view=o365-worldwide). We will be obliged if you can let us know any particular reason of cancellation prior to cancelling it - so that we can find ways to solve those problems and serve you better. Your feedback is very important for us. 
