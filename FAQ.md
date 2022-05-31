@@ -11,10 +11,21 @@ A: No, for Agent to collect all required configurations, it must be installed as
 
 A: The agent needs to be installed on the device which needs to be audited. If you wish to get your laptop or work machine audited, you can install agent on the same. Typically you would want to audit a server that has audit requirements - so choose installation target according to auditing needs.
 
+> What kind of data does the agent collect? Is there any risk of configuration change?
+
+A: The OSSEC agent only runs in read-only mode for all operating system configurations and service level configurations required strictly for auditing needs. There is no change made to any operating system settings or configurations by this agent. You can rest assured that none of your sensitive data or credentials or personal information will be shared outside of the device. If you are still in doubt, feel free to contact us at info@khika.com
+
 > How do I uninstall the agent?
 
 A: Please refer [this](https://github.com/khikatech/ossec-utils/wiki/How-it-works#uninstallation) section
 
+> Is there is auto-remediation option available?
+
+A: No, as of now we do not have any automated remediation feature built in this SaaS offering. Please reach out to us if you have specific needs in this regard and we can assist in getting your hardening posture score to increased compliance level
+
+> Can I see or customize which policies does the report run against?
+
+A: Yes, from the SaaS portal, you have an option to explore or browse default policies / rules. You can also deselect the ones you feel are not applicable in your environment - via Customize Policy option.
 
 # Support
 > I have a question that is not answered anywhere on this wiki. How can I get help?
