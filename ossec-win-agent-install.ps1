@@ -14,73 +14,111 @@ function WriteLog{
     Add-content $LogFile -value $LogMessage
 }
 
-function verify_installation{
-    $osseclog = 'C:\Program Files (x86)\ossec-agent\ossec.log'
-    $connect_server = Get-Content $osseclog | ? {($_ | Select-String "Connected to server")}        
-    $last_powershellCommand = Get-Content $osseclog | ? {($_ | Select-String "NetFirewallProfile")}
-    $current_DateTime = (Get-Date).AddMinutes(-5).ToString("yyyy/MM/dd HH:mm")
-    WriteLog "$connect_server"
-    WriteLog "$last_powershellCommand"
+function restart_agent_verify{
+    Write-Output "Hardening audit logs not found"
+    WriteLog "Hardening audit logs not found"
+    Write-Output "`r`nTrying to connect server after restart"
+    WriteLog "Trying to connect server after restart"
+    Write-Output "`r`nRestarting ossec-agent service."
+    WriteLog "Restarting ossec-agent service."
+    Restart-Service $srvName
+    $srvStat = Get-Service $srvName
+    Write-Output "Ossec-agent is $($srvStat.status)"
+    WriteLog "Ossec-agent is $($srvStat.status)" 
+    Write-Output "Waiting for 30s"
+    WriteLog "Waiting for 30s"
+    Start-Sleep -s 30
 
+    $connect_server = Get-Content $osseclog | ? {($_ | Select-String "Connected to server")}
+    $last_powershellCommand = Get-Content $osseclog | ? {($_ | Select-String "NetFirewallProfile")}
+    $refrence_DateTime = (Get-Date).AddMinutes(-5).ToString("yyyy/MM/dd HH:mm")
+    WriteLog "connect_server=$connect_server"
+    WriteLog "last_powershellCommand=$last_powershellCommand"
+    
     foreach ($lastline_ServerData in $connect_server){}
     $connectedServer_Data = $($lastline_ServerData -split('\s+'))[0,1]
     $connectedServer_DateTime = [System.String]::Join(" ",$connectedServer_Data)
-    if((Get-Date $current_DateTime) -lt (Get-Date $connectedServer_DateTime)){
-        Write-Output "`r`nAgent is connected to Server"
-        WriteLog "Agent is connected to Server"
-    }else{
-        Write-Output "`r`n Agent Failed to connect Server. Please contact us for support on support@khika.com with ossec-win-agent-installation.log file"
-        WriteLog "Agent Failed to connect Server. Please contact us for support on support@khika.com with ossec-win-agent-installation.log file"
-        break;
-        }
-
-    foreach ($lastline_command in $last_powershellCommand){}
-    $lastCommand_Data = $($lastline_command -split('\s+'))[0,1]
-    $lastCommand_DateTime = [System.String]::Join(" ",$lastCommand_Data)
-    if((Get-Date $current_DateTime) -lt (Get-Date $lastCommand_DateTime)){
-        Write-Output "Hardening audit logs found`r`n"
-        WriteLog "Hardening audit logs found"
-    }else{
-        Write-Output "Hardening audit logs not found"
-        WriteLog "Hardening audit logs not found"
-        Write-Output "`r`nTrying to connect server after restart"
-        WriteLog "Trying to connect server after restart"
-        Write-Output "`r`nRestarting ossec-agent service."
-        WriteLog "Restarting ossec-agent service."
-        Restart-Service $srvName
-        $srvStat = Get-Service $srvName
-        Write-Output "Ossec-agent is $($srvStat.status)"
-        WriteLog "Ossec-agent is $($srvStat.status)" 
-        Write-Output "Waiting for 30s"
-        WriteLog "Waiting for 30s"
-        Start-Sleep -s 30
-
-        $connect_server = Get-Content $osseclog | ? {($_ | Select-String "Connected to server")}
-        $last_powershellCommand = Get-Content $osseclog | ? {($_ | Select-String "NetFirewallProfile")}
-        $current_DateTime = (Get-Date).AddMinutes(-5).ToString("yyyy/MM/dd HH:mm")
-
-        foreach ($lastline_ServerData in $connect_server){}
-        $connectedServer_Data = $($lastline_ServerData -split('\s+'))[0,1]
-        $connectedServer_DateTime = [System.String]::Join(" ",$connectedServer_Data)
-        if((Get-Date $current_DateTime) -lt (Get-Date $connectedServer_DateTime)){
+        if ($connectedServer_DateTime -eq " "){
+            Write-Output "`r`nAgent Failed to connect Server. Please contact us for support on support@khika.com with ossec-win-agent-installation.log file"
+            WriteLog "Agent Failed to connect Server. Please contact us for support on support@khika.com with ossec-win-agent-installation.log file"
+            break;
+            }
+        if((Get-Date $refrence_DateTime) -lt (Get-Date $connectedServer_DateTime)){
             Write-Output "`r`nAgent is connected to Server"
             WriteLog "Agent is connected to Server"
         }else{
             Write-Output "`r`nAgent failed to connect Server. Please contact us for support on support@khika.com with ossec-win-agent-installation.log file"
             WriteLog "Agent failed to connect Server. Please contact us for support on support@khika.com with ossec-win-agent-installation.log file" 
+            break;
             }
 
-        foreach ($lastline_command in $last_powershellCommand){}
-        $lastCommand_Data = $($lastline_command -split('\s+'))[0,1]
-        $lastCommand_DateTime = [System.String]::Join(" ",$lastCommand_Data)
-        if((Get-Date $current_DateTime) -lt (Get-Date $lastCommand_DateTime)){
-            Write-Output "Hardening audit logs found`r`n"
-            WriteLog "Hardening audit logs found"
+    foreach ($lastline_command in $last_powershellCommand){}
+    $lastCommand_Data = $($lastline_command -split('\s+'))[0,1]
+    $lastCommand_DateTime = [System.String]::Join(" ",$lastCommand_Data)
+        if (-not($lastCommand_DateTime -eq " ")){
+            if((Get-Date $refrence_DateTime) -lt (Get-Date $lastCommand_DateTime)){
+                Write-Output "Hardening audit logs found`r`n"
+                WriteLog "Hardening audit logs found"
+            }else{
+                Write-Output "Hardening audit logs not found. Please contact us for support on support@khika.com with ossec-win-agent-installation.log file`r`n"
+                WriteLog "Hardening audit logs not found. Please contact us for support on support@khika.com with ossec-win-agent-installation.log file"
+                }
         }else{
             Write-Output "Hardening audit logs not found. Please contact us for support on support@khika.com with ossec-win-agent-installation.log file`r`n"
             WriteLog "Hardening audit logs not found. Please contact us for support on support@khika.com with ossec-win-agent-installation.log file"
             }
     }
+
+function verify_installation{
+    $osseclog = 'C:\Program Files (x86)\ossec-agent\ossec.log'
+    $connect_server = Get-Content $osseclog | ? {($_ | Select-String "Connected to server")}        
+    $last_powershellCommand = Get-Content $osseclog | ? {($_ | Select-String "NetFirewallProfile")}
+    $refrence_DateTime = (Get-Date).AddMinutes(-5).ToString("yyyy/MM/dd HH:mm")
+    WriteLog "connect_server=$connect_server"
+    WriteLog "last_powershellCommand=$last_powershellCommand"
+
+    foreach ($lastline_ServerData in $connect_server){}
+    $connectedServer_Data = $($lastline_ServerData -split('\s+'))[0,1]
+    $connectedServer_DateTime = [System.String]::Join(" ",$connectedServer_Data)
+        if ($connectedServer_DateTime -eq " "){
+            Write-Output "`r`nAgent Failed to connect Server. Please contact us for support on support@khika.com with ossec-win-agent-installation.log file"
+            WriteLog "Agent Failed to connect Server. Please contact us for support on support@khika.com with ossec-win-agent-installation.log file"
+            break;
+        }
+        if((Get-Date $refrence_DateTime) -lt (Get-Date $connectedServer_DateTime)) {
+            Write-Output "`r`nAgent is connected to Server"
+            WriteLog "Agent is connected to Server"
+        }else{
+            Write-Output "`r`nAgent Failed to connect Server. Please contact us for support on support@khika.com with ossec-win-agent-installation.log file"
+            WriteLog "Agent Failed to connect Server. Please contact us for support on support@khika.com with ossec-win-agent-installation.log file"
+            break;
+        }
+
+    foreach ($lastline_command in $last_powershellCommand){}
+    $lastCommand_Data = $($lastline_command -split('\s+'))[0,1]
+    $lastCommand_DateTime = [System.String]::Join(" ",$lastCommand_Data)
+        if (-not($lastCommand_DateTime -eq " ")){
+            if((Get-Date $refrence_DateTime) -lt (Get-Date $lastCommand_DateTime)){
+                Write-Output "Hardening audit logs found`r`n"
+                WriteLog "Hardening audit logs found"
+            }else{
+                restart_agent_verify
+                }
+        }else{
+            restart_agent_verify
+            }        
+}
+
+function agent_already_installed{
+    $ossec_service = Get-Service "OssecSvc*"|select Name
+    $service_name = $ossec_service.Name
+        if($service_name -eq "OssecSvc"){
+            Write-Host "`r`nOSSEC-HIDS agent is already installed. Please uninstall the OSSEC-HIDS agent for automated installation process to continue.`r`n"
+            break;
+        }else{
+            Write-Host "`r`nOSSEC-HIDS agent automated installation process will start now.`r`n"
+            WriteLog "`r`nOSSEC-HIDS agent automated installation process will start now.`r`n"
+            }
 }
 
 $elevated = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
@@ -95,6 +133,9 @@ if ($elevated -ne 'True'){
         Write-Output "** Note: Installation process may take 3-5 minutes to complete"
         Write-Output "** Note: Please ignore any message: 'manage_agents: Input too large. Not adding it.'"
         Write-Output "*************************************************************************************"
+        #Already agent installed check function call
+        agent_already_installed
+        #Automated ossec-agent installation process starts from here
         WriteLog "ossec-agent-win32-3.7.0-24343.exe downloading started"
         $url = "https://updates.atomicorp.com/channels/atomic/windows/ossec-agent-win32-3.7.0-24343.exe"
         $outpath = "$PSScriptRoot/ossec-agent-win32-3.7.0-24343.exe"
