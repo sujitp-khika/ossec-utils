@@ -2,6 +2,107 @@
 # Copyright 2022 KHIKA Technologies Private Limited. All rights reserved.
 # This script is written for automation of ossec-agent installation for CentOS & Ubuntu
 # Official ossec site link for downloading source code and other documentation related information is available through the link https://www.ossec.net/download-ossec/
+
+restart_agent_verify(){
+echo "Hardening audit logs not found"
+logger -s "Hardening audit logs not found"
+echo "Trying to connect server after restart"
+logger -s "Trying to connect server after restart"
+echo "Restarting ossec-agent service."
+logger -s "Restarting ossec-agent service."
+sudo /var/ossec/bin/ossec-control restart    
+echo "Waiting for 30s"
+logger -s "Waiting for 30s"
+sleep 30
+
+osseclog="/var/ossec/logs/ossec.log"
+conectedServer_Data=`cat $osseclog | grep "Connected to server"`
+hardeningExecuted_Data=`cat $osseclog | grep "Linux_cis_benchmark.sh"`
+echo "conectedServer_Data=$conectedServer_Data"
+echo "hardeningExecuted_Data=$hardeningExecuted_Data"
+
+conectedServer_Date=`cat $osseclog | grep "Connected to server" | tail -1 | awk '{print $1,$2}'`
+hardeningExecuted_Date=`cat $osseclog | grep "Linux_cis_benchmark.sh" | tail -1 | awk '{print $1,$2}'`
+conectedServer_epoch=$(date -d "${conectedServer_Date}" +"%s")
+hardeningExecuted_epoch=$(date -d "${hardeningExecuted_Date}" +"%s")
+currentDateTime=`date`
+currentDateTime_epoch=$(date -d "${currentDateTime}" +"%s")
+refrence_DateTime=$(expr $currentDateTime_epoch - 300)
+
+if [[ "$conectedServer_epoch" -eq " " ]]; then
+        echo "Agent Failed to connect Server. Please contact us for support on support@khika.com with ossec-linux-agent-installation.log file"
+        logger -s "Agent Failed to connect Server. Please contact us for support on support@khika.com with ossec-linux-agent-installation.log file"
+        exit
+fi
+
+if [[ "$refrence_DateTime" -lt "$conectedServer_epoch" ]]; then
+        echo "Agent is connected to Server"
+        logger -s "Agent is connected to Server"
+else
+        echo "Agent Failed to connect Server. Please contact us for support on support@khika.com with ossec-linux-agent-installation.log file"
+        logger -s "Agent Failed to connect Server. Please contact us for support on support@khika.com with ossec-linux-agent-installation.log file"
+        exit
+fi
+  
+# Below code block verifies the hardening command is executed or not.
+if [[ !("$hardeningExecuted_epoch" -eq " ") ]]; then
+	if [[ "$refrence_DateTime" -lt "$hardeningExecuted_epoch" ]]; then
+		echo "Hardening audit logs found"
+        logger -s "Hardening audit logs found"
+	else
+        echo "Hardening audit logs not found. Please contact us for support on support@khika.com with ossec-linux-agent-installation.log file"
+		logger -s "Hardening audit logs not found. Please contact us for support on support@khika.com with ossec-linux-agent-installation.log file"
+		exit 
+    fi
+else
+	echo "Hardening audit logs not found. Please contact us for support on support@khika.com with ossec-linux-agent-installation.log file"
+    logger -s "Hardening audit logs not found. Please contact us for support on support@khika.com with ossec-linux-agent-installation.log file"
+	exit
+fi
+}
+
+verify_installation(){
+osseclog="/var/ossec/logs/ossec.log"
+conectedServer_Data=`cat $osseclog | grep "Connected to server"`
+hardeningExecuted_Data=`cat $osseclog | grep "Linux_cis_benchmark.sh"`
+echo "conectedServer_Data=$conectedServer_Data"
+echo "hardeningExecuted_Data=$hardeningExecuted_Data"
+
+conectedServer_Date=`cat $osseclog | grep "Connected to server" | tail -1 | awk '{print $1,$2}'`
+hardeningExecuted_Date=`cat $osseclog | grep "Linux_cis_benchmark.sh" | tail -1 | awk '{print $1,$2}'`
+conectedServer_epoch=$(date -d "${conectedServer_Date}" +"%s")
+hardeningExecuted_epoch=$(date -d "${hardeningExecuted_Date}" +"%s")
+currentDateTime=`date`
+currentDateTime_epoch=$(date -d "${currentDateTime}" +"%s")
+refrence_DateTime=$(expr $currentDateTime_epoch - 300)
+
+if [[ "$conectedServer_epoch" -eq " " ]]; then
+	echo "Agent Failed to connect Server. Please contact us for support on support@khika.com with ossec-linux-agent-installation.log file"
+    logger -s "Agent Failed to connect Server. Please contact us for support on support@khika.com with ossec-linux-agent-installation.log file"
+    exit
+fi
+
+if [[ "$refrence_DateTime" -lt "$conectedServer_epoch" ]]; then
+	echo "Agent is connected to Server"
+    logger -s "Agent is connected to Server"
+else
+	echo "Agent Failed to connect Server. Please contact us for support on support@khika.com with ossec-linux-agent-installation.log file"
+    logger -s "Agent Failed to connect Server. Please contact us for support on support@khika.com with ossec-linux-agent-installation.log file"
+    exit
+fi
+
+if [[ !("$hardeningExecuted_epoch" -eq " ") ]]; then
+	if [[ "$refrence_DateTime" -lt "$hardeningExecuted_epoch" ]]; then
+		echo "Hardening audit logs found"
+        logger -s "Hardening audit logs found"
+	else
+        restart_agent_verify
+    fi
+else
+    restart_agent_verify
+fi       
+}
+
 main()
 {
 os_name=`grep "PRETTY_NAME" /etc/os-release |  cut -f2 -d"="`
@@ -17,7 +118,7 @@ fi
 exec >$log_file
 if [[ "$os_name" == *"CentOS Linux"* ]] || [[ "$os_name" == *"Ubuntu"* ]]; then
         echo "OS Name="$os_name
-	echo "############################################################################"
+		echo "############################################################################"
         if [[ "$os_name" == *"CentOS Linux"* ]]; then
 		logger -s "***************************************************************"
 		logger -s "** Starting automated installation"
@@ -28,6 +129,16 @@ if [[ "$os_name" == *"CentOS Linux"* ]] || [[ "$os_name" == *"Ubuntu"* ]]; then
 		echo "wget installation started"
                 sudo yum install wget -y
 		echo "wget installation completed"
+		echo "############################################################################"
+		ossec_install="$(rpm -qa ossec-hids-agent)"
+		 if [[ -z "$ossec_install" ]]; then
+		 		echo "OSSEC-HIDS agent automated installation process will start now."
+				logger -s "OSSEC-HIDS agent automated installation process will start now."
+        else
+                echo "OSSEC-HIDS agent is already installed. Please uninstall the OSSEC-HIDS agent for automated installation process to continue"
+				logger -s "OSSEC-HIDS agent is already installed. Please uninstall the OSSEC-HIDS agent for automated installation process to continue"
+				exit
+        fi
 		echo "############################################################################"
 		echo "ossec-agent packages download started"
                 wget -q -O - https://updates.atomicorp.com/installers/atomic | sudo -E bash
@@ -48,11 +159,22 @@ if [[ "$os_name" == *"CentOS Linux"* ]] || [[ "$os_name" == *"Ubuntu"* ]]; then
 		logger -s "** Starting automated installation"
 		logger -s "** Note: Do not press any key - this is automated installation"
 		logger -s "** Note: Installation process may take 3-5 minutes to complete"
+		logger -s "** Please ignore WARNING: apt does not have a stable CLI interface. Use with caution in scripts."
         logger -s "****************************************************************"$'\r\n\n'
 		echo "Starting automated installation"
 		echo "wget installation started"
         sudo apt-get install wget -y
         echo "wget installation completed"
+		echo "############################################################################"
+		ossec_installed=`apt list -a ossec-hids-agent| awk '{print $4}'`
+        if [[ "$ossec_installed" == *"installed"* ]]; then
+                echo "OSSEC-HIDS agent is already installed. Please uninstall the OSSEC-HIDS agent for automated installation process to continue"
+				logger -s "OSSEC-HIDS agent is already installed. Please uninstall the OSSEC-HIDS agent for automated installation process to continue"
+				exit
+        else
+                echo "OSSEC-HIDS agent automated installation process will start now."
+				logger -s "OSSEC-HIDS agent automated installation process will start now."
+        fi
 		echo "############################################################################"
 		echo "ossec-agent packages download started"
 		wget -q -O - https://updates.atomicorp.com/installers/atomic | sudo -E bash
@@ -95,14 +217,24 @@ if [[ "$os_name" == *"CentOS Linux"* ]] || [[ "$os_name" == *"Ubuntu"* ]]; then
 				sleep 10
 				logger -s "Completed 60s wait"
 				echo "Completed 60s wait"
+				echo "Restating ossec-agent"
+				logger -s "Restating ossec-agent"
                 sudo /var/ossec/bin/ossec-control restart
+				sleep 15
 		echo "(Note: Please ignore any message saying 'Duplicated directory given /bin or /etc')"
 		echo "Completed automated installation"
 		logger -s "(Note: Please ignore any message saying 'Duplicated directory given /bin or /etc')"
 		logger -s "Completed automated installation"$'\r\n\n\n'
+
+		#Server connected or not and Hardening command executed or not Verification
+        logger -s "********************************************************"
+        logger -s "Verifying installation"
+        logger -s "********************************************************"
+        echo "**********Verifying installation**********"
+        verify_installation
 		
 		logger -s "******************************************************************************************"
-		logger -s "** You can execute reports after 5-10 minutes (required for logs to be collected at Khika)"
+		logger -s "** You can execute reports after 5 minutes (required for logs to be collected at Khika)"
 		logger -s "******************************************************************************************"
 		
 else
@@ -135,4 +267,3 @@ then
 	helpFunction
 fi
 main
-
